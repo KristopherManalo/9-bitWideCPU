@@ -1,4 +1,3 @@
-#141CPU
 CPU Project for CSE141l
 
 Repository is used for version control and file sharing across computers
