@@ -16,6 +16,7 @@ wire relative_en, absolute_en;
 // wire [INSTRUCTION_MEM_WIDTH-1:0]
 
 // Control wires
+wire[1:0] ALUfunct;
 wire ALUop, ALU_and, reg_write_en, load_mem_en, store_mem_en,
     branch_en, branch_eq, branch_lt, imm_en, reg_target_overwrite;
 
@@ -32,7 +33,7 @@ wire shift_carry_in, shift_carry_out, alu_zero, alu_lt;
 wire[WORD_WIDTH-1:0] dat_in, dat_address, dat_out;
 
 
-PC #() pc1(
+PC pc1(
     .reset,
     .clk,
     .relative_en,
@@ -88,6 +89,30 @@ dat_mem dm1(
     .dat_out
 );
 
-assign done = program_counter == 2**INSTRUCTION_MEM_WIDTH;
+
+// Determines data_in for alu
+always_comb begin
+    if(reg_target_overwrite) begin
+        alu_inA = reg_dat_outA
+    end
+    else begin
+        alu_inA = '0;
+    end
+    if(imm_en)begin
+        // sign extended immediate 
+    end
+    else begin
+        alu_inB = reg_dat_outB;
+    end
+end
+
+always_comb begin
+    if(reg_target_overwrite)
+        reg_pWr == 3'b111;
+    else 
+        reg_pWr == instruction[5:3];
+end
+
+assign done = (program_counter == 2**INSTRUCTION_MEM_WIDTH-1);
 
 endmodule
