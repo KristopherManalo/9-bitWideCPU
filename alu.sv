@@ -12,68 +12,34 @@ module alu(
                             lt
 );
 
+logic ADD_en, LSL_en, LSR_en, AND_en;
+
 always_comb begin
     result = 'b0;
     shift_carry_out = 'b0;
-    zero = !result;
+    // zero = !result;
+    zero = (inA == inB);
     // pari = ^result; 
     lt = inA < inB;
 
-    case(alu_cmd)
-        2'b00: begin
-            case(funct)
-                2'b00: begin // AND
-                    result = inA & inB;
-                    // case(bottom3[1:0])
-                    //     2'b00:
-                    //         result = inA & `MANTISSA;
-                    //     2'b10:
-                    //         result = inA & `EXPONENT;
-                    //     // 2'b11:
-                    //     //     result = inA & `EXPONENT;
-                    // endcase
-                end
-                2'b01: begin // ADD
-                    {shift_carry_out, result} = inA + inB + shift_carry_in;
-                end
-                2'b10: begin // LSL
-                    {shift_carry_out, result} = {inA, shift_carry_in};
-                end
-                2'b11: begin // LSR
-                    {result,shift_carry_out} = {shift_carry_in, inA};
-                end
-            endcase
-        end
+    AND_en = (funct == 'b00);
+    ADD_en = ((alu_cmd == 'b11 && funct[1] == 'b1) || funct == 'b01);
+    LSL_en = (funct == 'b10);
+    LSR_en = (funct == 'b11);
 
-        // 2'b01: begin // Memory management
-        //     case(funct[1])
-        //         2'b0: begin // LWD
-        //         end
-        //         2'b1: begin // SWD
-        //         end
-        //     endcase
-        // end
-        // 2'b10: begin
-        //     case(funct[1])
-        //         2'b0: begin // BEQ
-        //         end
-        //         2'b1: begin // BLT
-        //         end
-        //     endcase
-        // end
-        2'b11: begin
-            if(funct[1] == 1) begin // ADI
-                // TODO: Implement signed behavior
-                result = inA + inB + shift_carry_in;
-            end
-        //     case(funct[1])
-        //         2'b0: begin
-        //         end
-        //         2'b1: begin
-        //         end
-        //     endcase
-        end
-    endcase
+    if(AND_en) begin
+        result = inA & inB;
+    end
+    else if(ADD_en) begin
+        {shift_carry_out, result} = inA + inB + shift_carry_in;
+    end
+    else if(LSL_en) begin
+        {shift_carry_out, result} = {inA, shift_carry_in};
+    end
+    else if(LSR_en) begin
+        {result,shift_carry_out} = {shift_carry_in, inA};
+    end
+
 end
 
 endmodule
