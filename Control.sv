@@ -9,6 +9,7 @@ module Control (
                     reg_write_en,
                     load_mem_en,
                     store_mem_en,
+                    branch_ab,
                     branch_en,
                     branch_eq,
                     branch_lt,
@@ -23,6 +24,7 @@ module Control (
         reg_write_en = 0;
         load_mem_en = 0;
         store_mem_en = 0;
+        branch_ab = 0;
         branch_en = 0;
         branch_eq = 0;
         branch_lt = 0;
@@ -50,15 +52,18 @@ module Control (
             end
             'b10: begin
                 if(op[1] == 'b0) begin
+                    branch_en = 1;
                     branch_eq = 1;
                 end
                 else if(op[1] == 'b1) begin
+                    branch_en = 1;
                     branch_lt = 1;
                 end
             end
             'b11: begin
                 if(op[1] == 'b0) begin
                     branch_en = 1;
+                    branch_ab = 1;
                 end
                 else if(op[1] == 'b1) begin
                     if(reg_source != 0) begin

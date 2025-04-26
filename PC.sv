@@ -3,13 +3,13 @@
 // will keep both
 
 `include "globals.svh"
-module PC #(parameter PC_WIDTH)(
+module PC (
     input                       reset,
                                 clk,
                                 relative_en, 
                                 absolute_en,
-    input       [PC_WIDTH-1:0]  target_address,
-    output logic[PC_WIDTH-1:0]  ctr_next
+    input       [INSTRUCTION_MEM_WIDTH-1:0]  target_address,
+    output logic[INSTRUCTION_MEM_WIDTH-1:0]  ctr_next
 );
 
 always_ff @(posedge clk) begin
