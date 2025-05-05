@@ -151,7 +151,8 @@ always_comb begin
     end
     else if(branch_en) begin // If branching
         reg_pA = instruction[4:2];
-        reg_pB = 3'b111;
+        // Changed to comparing register and register + 1
+        reg_pB = instruction[4:2] + 'b1; 
     end
     else begin // If loading/storing to memory
         reg_pA = instruction[5:3];
