@@ -29,7 +29,7 @@
             strcpy(out, "100"); break; \
         case -10: \
             strcpy(out, "101"); break; \
-        case 50: \
+        case 15: \
             strcpy(out, "110"); break; \
         case -50: \
             strcpy(out, "111"); break; \
@@ -49,7 +49,7 @@
         out[i] = (char)('0' + (char)((((__UINT32_TYPE__)imm << (i + diff))) >> (sizeof(int) * 8 - 1))); \
     } \
 }
-
+/**
 #define encAND() { \
     int reg0; \
     CHECK_REG(reg0); \
@@ -70,6 +70,24 @@
     fprintfReg(file_out, reg0); \
     fprintf(file_out, out); \
     FPRINT_DELIMITER(file_out) \
+}
+    */
+#define encAND() { \
+    int reg0; \
+    CHECK_REG(reg0); \
+    int reg1; \
+    CHECK_REG(reg1); \
+    int valid = regInRange(reg0, reg1); \
+    if(valid == 1) { \
+        fprintf(file_out, AND); \
+        fprintfReg(file_out, reg0); \
+        fprintfOff(file_out, reg0, reg1); \
+        FPRINT_DELIMITER(file_out) \
+    } \
+    else { \
+        strcpy(error, REGISTER_OFFSET_ERR); \
+        return 1; \
+    } \
 }
 
 #define encADD() { \
