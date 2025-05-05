@@ -1,0 +1,37 @@
+AND r3, #0
+AND r3, #1
+AND r3, #2
+AND r3, #3
+NOP
+ADD r3, r4
+ADD r3, r3
+ADD r7, r0
+ADD r7, r1
+ADD r7, r2
+ADD r7, r3
+// ADD r7, r5 // Invalid line
+NOP
+
+// AWESOME VERY LONG COMMENT TO LIMIT TEST THE BEHAVIOR W/LONG LINE
+// LSL r3, #0
+LSL r3, #1
+LSL r3, #4
+// LSL r3, #5
+// LSR r3, #0
+LSR r3, #1
+LSR r3, #4
+// LSR r3, #5
+LWD r3, r7
+// LWD r7, r8
+SWD r3, r5
+BEQ r3, #10
+BLT r3, #10
+NOP
+JMP #10
+NOP
+ADI r3, #0
+ADI r7, #3
+ADI r3, #-3
+ADI r3, #-4
+// ADI r3, #-5
+// ADI r3, #4
