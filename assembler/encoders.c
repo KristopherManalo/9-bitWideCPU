@@ -245,7 +245,7 @@
 }
 
 int processLine(char gojoa[BUF_SIZE], FILE *file_out, 
-            int *index, char error[BUF_SIZE]) {
+            int *index, char error[BUF_SIZE], int *lineOut) {
     // printf("Processing line\r\n");
     char OPWORD[4];
     OPWORD[0] = gojoa[0];
@@ -294,12 +294,17 @@ int processLine(char gojoa[BUF_SIZE], FILE *file_out,
         fprintf(file_out, NOP);
         FPRINT_DELIMITER(file_out)
     }
+    else if(strcmp(OPWORD, "DON") == 0) {
+        fprintf(file_out, DON);
+        FPRINT_DELIMITER(file_out)
+    }
     else {
         *index = 0;
         // printf("index = %d\n", *index);
         strcpy(error, INSTRUCTION_ERR);
         return 1;
     }
+    (*lineOut)++;
     return 0;
 }
 
