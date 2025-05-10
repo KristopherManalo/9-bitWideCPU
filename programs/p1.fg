@@ -43,3 +43,4 @@ ADI r0, #3
 // SWD r#, r7 // Store MSB into data_mem[3]
 // ADI r0, #2
 // SWD r#, r7 // Store LSB into data_mem[2]
+DON
