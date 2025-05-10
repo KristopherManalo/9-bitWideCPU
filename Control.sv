@@ -6,6 +6,7 @@ module Control (
     output logic [1:0]  ALUfunct,
     output logic    ALUop,
                     ALU_and,
+                    ALU_rol,
                     reg_write_en,
                     load_mem_en,
                     store_mem_en,
@@ -21,6 +22,7 @@ module Control (
         ALUfunct = '0;
         ALUop = 0;
         ALU_and = 0;
+        ALU_rol = 0;
         reg_write_en = 0;
         load_mem_en = 0;
         store_mem_en = 0;
@@ -34,13 +36,16 @@ module Control (
             'b00: begin
                 ALUop = 1;
                 ALUfunct = op[1:0];
-                // switch(op[1:0]) begin
-                //     'b00:
-                //         ALUfunct = 'b00;
-                //     'b01:
-                //     'b10:
-                //     'b11:
-                // end
+                case(op[1:0]) 
+                    'b00:
+                        ALUfunct = 'b00;
+                    'b01: 
+                        ALUfunct = 'b01;
+                    'b10:
+                        ALU_rol = 1;
+                    'b11:
+                        ALU_rol = 1;
+                endcase
             end
             'b01: begin
                 if(op[1] == 'b0) begin

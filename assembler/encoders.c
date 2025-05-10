@@ -29,7 +29,7 @@
             strcpy(out, "100"); break; \
         case -10: \
             strcpy(out, "101"); break; \
-        case 50: \
+        case 15: \
             strcpy(out, "110"); break; \
         case -50: \
             strcpy(out, "111"); break; \
@@ -49,7 +49,7 @@
         out[i] = (char)('0' + (char)((((__UINT32_TYPE__)imm << (i + diff))) >> (sizeof(int) * 8 - 1))); \
     } \
 }
-
+/**
 #define encAND() { \
     int reg0; \
     CHECK_REG(reg0); \
@@ -70,6 +70,24 @@
     fprintfReg(file_out, reg0); \
     fprintf(file_out, out); \
     FPRINT_DELIMITER(file_out) \
+}
+    */
+#define encAND() { \
+    int reg0; \
+    CHECK_REG(reg0); \
+    int reg1; \
+    CHECK_REG(reg1); \
+    int valid = regInRange(reg0, reg1); \
+    if(valid == 1) { \
+        fprintf(file_out, AND); \
+        fprintfReg(file_out, reg0); \
+        fprintfOff(file_out, reg0, reg1); \
+        FPRINT_DELIMITER(file_out) \
+    } \
+    else { \
+        strcpy(error, REGISTER_OFFSET_ERR); \
+        return 1; \
+    } \
 }
 
 #define encADD() { \
@@ -227,7 +245,7 @@
 }
 
 int processLine(char gojoa[BUF_SIZE], FILE *file_out, 
-            int *index, char error[BUF_SIZE]) {
+            int *index, char error[BUF_SIZE], int *lineOut) {
     // printf("Processing line\r\n");
     char OPWORD[4];
     OPWORD[0] = gojoa[0];
@@ -276,12 +294,17 @@ int processLine(char gojoa[BUF_SIZE], FILE *file_out,
         fprintf(file_out, NOP);
         FPRINT_DELIMITER(file_out)
     }
+    else if(strcmp(OPWORD, "DON") == 0) {
+        fprintf(file_out, DON);
+        FPRINT_DELIMITER(file_out)
+    }
     else {
         *index = 0;
         // printf("index = %d\n", *index);
         strcpy(error, INSTRUCTION_ERR);
         return 1;
     }
+    (*lineOut)++;
     return 0;
 }
 

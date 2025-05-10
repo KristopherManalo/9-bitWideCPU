@@ -10,7 +10,8 @@
     #define BLT "101"
     #define JMP "110"
     #define ADI "111"
-    #define NOP "111000000"
+    #define NOP "111111000"
+    #define DON "000111100"
 #endif
 
 #ifndef REGISTERS

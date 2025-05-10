@@ -2,6 +2,8 @@
 #include "encoders.h"
 #include "errors.h"
 
+#define NUM_LINES 1024
+
 
 /**
  * Reads in a freaky gojo assembly language file
@@ -68,11 +70,12 @@ int main(int argc, char *argv[]) {
     char buffer[BUF_SIZE];
     char error[BUF_SIZE];
     int line = 1;
+    int lines_written = 1;
     int character = 0;
     while(fgets(buffer, sizeof(buffer), file_in) != NULL) {
         // printf("%s\r\n", buffer);
         character = 0;
-        if(processLine(buffer, file_out, &character, error) != 0) {
+        if(processLine(buffer, file_out, &character, error, &lines_written) != 0) {
             printf("Error processing line %d:%d: ",line, character);
             printf(error);
             PRINT_DELIMITER
@@ -81,6 +84,14 @@ int main(int argc, char *argv[]) {
         line++;
     }
 
+    // Appends rest of output file with "DON" flags
+    for(int i = lines_written; i < NUM_LINES; ++i) {
+        fprintf(file_out, DON);
+        FPRINT_DELIMITER(file_out)
+    }
+
+    fclose(file_in);
+    fclose(file_out);
 
     return 0;
 }

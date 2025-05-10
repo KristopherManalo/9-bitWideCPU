@@ -10,7 +10,7 @@
  * @returns 0 if successful, else 1
  */
 int processLine(char gojoa[BUF_SIZE], FILE *file_out, 
-    int *character, char error[BUF_SIZE]);
+    int *character, char error[BUF_SIZE], int *lineOut);
 
 /**
  * Scans the line for the next register

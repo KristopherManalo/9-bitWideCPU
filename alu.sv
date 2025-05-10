@@ -33,11 +33,13 @@ always_comb begin
     else if(ADD_en) begin
         {shift_carry_out, result} = inA + inB + shift_carry_in;
     end
-    else if(LSL_en) begin
-        {shift_carry_out, result} = {inA, shift_carry_in};
+    else if(LSL_en) begin 
+        // {shift_carry_out, result} = {inA, shift_carry_in};
+        {shift_carry_out, result} = {inA, inA[7]};
     end
     else if(LSR_en) begin
-        {result,shift_carry_out} = {shift_carry_in, inA};
+        // {result,shift_carry_out} = {shift_carry_in, inA};
+        {result, shift_carry_out} = {inA[0], inA};
     end
 
 end
