@@ -18,7 +18,7 @@ logic[WORD_WIDTH-1:0] and_lut_out;
 
 // Control wires
 logic[1:0] ALUfunct;
-logic ALUop, ALU_and, reg_write_en, load_mem_en, store_mem_en,
+logic ALUop, ALU_and, ALU_rol, reg_write_en, load_mem_en, store_mem_en,
     branch_ab, branch_en, branch_eq, branch_lt, imm_en, reg_target_overwrite;
 
 // Reg file wires
@@ -27,23 +27,24 @@ logic[WORD_WIDTH-1:0] reg_dat_in, reg_dat_outA, reg_dat_outB;
 
 // ALU wires
 logic alu_zeroQ;
-logic[1:0] alu_cmd, funct;
+// logic[1:0] alu_cmd, funct;
 logic[WORD_WIDTH-1:0] alu_inA, alu_inB, alu_result;
-logic shift_carry_in, shift_carry_out, alu_zero, alu_lt;
+logic shift_carry_in, shift_carry_out;
+logic alu_zero, alu_lt;
 
 // Data mem wires
 logic[WORD_WIDTH-1:0] dat_in, dat_address, dat_out;
 
-logic shift_clear = 0, shift_carry_en = 0;
+// logic shift_clear = 0, shift_carry_en = 0;
 
 PC_LUT pclut1(
     .address(instruction[2:0]),
     .target_address(target_counter)
 );
-AND_LUT andlut1(
-    .address(instruction[1:0]),
-    .bitmask(and_lut_out)
-);
+// AND_LUT andlut1(
+//     .address(instruction[1:0]),
+//     .bitmask(and_lut_out)
+// );
 
 PC pc1(
     .reset,
@@ -79,8 +80,8 @@ reg_file reg1(
 );
 
 alu alu1(
-    .alu_cmd,
-    .funct,
+    .alu_cmd(instruction[8:7]),
+    .funct(instruction[6:5]),
     .inA(alu_inA),
     .inB(alu_inB),
     .shift_carry_in,
@@ -106,7 +107,11 @@ always_comb begin
     absolute_en = 0;
     relative_en = 0;
     pc_in = 0;
-    if(branch_ab) begin
+    if(req == 0) begin
+        relative_en = 1;
+        pc_in = 0;
+    end
+    else if(branch_ab) begin
         absolute_en = 1;
         pc_in = (instruction[5:0] << 4);
     end
@@ -140,11 +145,11 @@ always_comb begin
         reg_pA = instruction[4:2];
         case(instruction[1:0]) 
             2'b00:
-                reg_pB = instruction[4:2] + 2'b01;
+                reg_pB = instruction[4:2] + 3'b001;
             2'b01:
-                reg_pB = instruction[4:2] + 2'b10;
+                reg_pB = instruction[4:2] + 3'b010;
             2'b10:
-                reg_pB = instruction[4:2] + 2'b11;
+                reg_pB = instruction[4:2] + 3'b011;
             2'b11:
                 reg_pB = instruction[4:2] + 3'b100;
         endcase
@@ -152,7 +157,7 @@ always_comb begin
     else if(branch_en) begin // If branching
         reg_pA = instruction[4:2];
         // Changed to comparing register and register + 1
-        reg_pB = instruction[4:2] + 'b1; 
+        reg_pB = instruction[4:2] + 1'b1; 
     end
     else begin // If loading/storing to memory
         reg_pA = instruction[5:3];
@@ -184,8 +189,17 @@ always_comb begin
             alu_inB = {{5{1'b0}}, instruction[2:0]};
         end
     end
-    else if(ALU_and) begin
-        alu_inB = and_lut_out;
+    else if(ALU_rol) begin
+        case(instruction[1:0])
+            2'b00:
+                alu_inB = 8'b00000001;
+            2'b01:
+                alu_inB = 8'b00000010;
+            2'b10:
+                alu_inB = 8'b00000011;
+            2'b11:
+                alu_inB = 8'b00000111;
+        endcase 
     end
     else begin
         alu_inB = reg_dat_outB;
@@ -200,6 +214,6 @@ end
 //         shift_carry_in <= shift_carry_out;
 // end
 
-assign done = (program_counter == 2**INSTRUCTION_MEM_WIDTH-1);
+assign done = (instruction == 9'b000111100);
 
 endmodule

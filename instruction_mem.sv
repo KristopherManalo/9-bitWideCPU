@@ -4,9 +4,9 @@ module instruction_mem(
     output logic    [INSTRUCTION_WIDTH-1:0] instruction
 );
     logic [INSTRUCTION_WIDTH-1:0] core[2**INSTRUCTION_MEM_WIDTH];
-    // initial begin
-    //     $readmemb("mach_code.txt", core);
-    // end 
+    initial begin
+        $readmemb("programs/p1.fgo", core);
+    end 
     assign instruction = core[ctr];
 
 endmodule

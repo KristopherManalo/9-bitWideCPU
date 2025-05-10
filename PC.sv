@@ -20,6 +20,6 @@ always_ff @(posedge clk) begin
     else if(absolute_en)
         ctr_next <= target_address;
     else
-        ctr_next <= ctr_next + 'b1;
+        ctr_next <= ctr_next + 9'b1;
 end
 endmodule
