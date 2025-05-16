@@ -48,10 +48,12 @@
 
 #ifndef CONSTANTS
 #define CONSTANTS
+    #define NUM_LINES       1024
     #define MAX_FILE_NAME   255
     #define BUF_SIZE        255
     #define IMM_SIZE        10
 #endif
+
 
 #ifndef DELIMITER
 #define DELIMITER
@@ -67,3 +69,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef LABELS
+#define LABELS
+    #define MAX_LABELS 100
+    struct label {
+        char name[BUF_SIZE];
+        int pc;
+        char jumps;
+    };
+    typedef struct {
+        struct label names[MAX_LABELS];
+        int num_labels;
+    } all_labels;
+
+    typedef struct {
+        char outputs[NUM_LINES][BUF_SIZE];
+    } all_instructions;
+#endif
