@@ -15,6 +15,7 @@ module Control (
                     branch_eq,
                     branch_lt,
                     imm_en,
+                    inA_zero,
                     reg_target_overwrite // If true, writes to R7
 );
 
@@ -31,24 +32,28 @@ module Control (
         branch_eq = 0;
         branch_lt = 0;
         imm_en = 0;
+        inA_zero = 0;
         reg_target_overwrite = 1;
         case(op[3:2])
-            'b00: begin
+            'b00: begin // ALU
+                reg_write_en = 1;
                 ALUop = 1;
                 ALUfunct = op[1:0];
                 case(op[1:0]) 
-                    'b00:
+                    'b00: // AND
                         ALUfunct = 'b00;
-                    'b01: 
+                    'b01: // AND
                         ALUfunct = 'b01;
-                    'b10:
+                    'b10:   // left roll
                         ALU_rol = 1;
-                    'b11:
+                    'b11:   // right roll
                         ALU_rol = 1;
                 endcase
             end
             'b01: begin
                 if(op[1] == 'b0) begin
+                    reg_target_overwrite = 0;
+                    reg_write_en = 1;
                     load_mem_en = 1;
                 end
                 else if (op[1] == 'b1) begin
@@ -71,8 +76,12 @@ module Control (
                     branch_ab = 1;
                 end
                 else if(op[1] == 'b1) begin
+                    reg_write_en = 1;
                     if(reg_source != 0) begin
                         reg_target_overwrite = 0;
+                    end
+                    else begin
+                        inA_zero = 1;
                     end
                     imm_en = 1;
                 end

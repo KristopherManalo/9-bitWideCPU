@@ -2,6 +2,7 @@
 module reg_file ( // 8 registers
     input   [WORD_WIDTH-1:0]        dat_in,
     input                           clk,
+                                    reset,
                                     wr_en,
     input   [REG_PWIDTH-1:0]        read_address_A,
                                     read_address_B,
@@ -13,8 +14,12 @@ module reg_file ( // 8 registers
 
     logic[WORD_WIDTH-1:0] core[2**REG_PWIDTH];
 
+
     always_ff @(posedge clk) begin
-        if(wr_en) begin
+        if(reset) begin
+            core <= '{default: '0};
+        end
+        else if(wr_en) begin
             // core[wr_address] <= dat_in;
             core[wr_address] <= dat_in;
         end

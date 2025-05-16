@@ -14,22 +14,22 @@ logic relative_en, absolute_en;
 logic[INSTRUCTION_MEM_WIDTH-1:0] pc_in;
 
 // AND_LUT wires
-logic[WORD_WIDTH-1:0] and_lut_out;
+// logic[WORD_WIDTH-1:0] and_lut_out;
 
 // Control wires
 logic[1:0] ALUfunct;
 logic ALUop, ALU_and, ALU_rol, reg_write_en, load_mem_en, store_mem_en,
-    branch_ab, branch_en, branch_eq, branch_lt, imm_en, reg_target_overwrite;
+    branch_ab, branch_en, branch_eq, branch_lt, imm_en, inA_zero, reg_target_overwrite;
 
 // Reg file wires
 logic[REG_PWIDTH-1:0] reg_pA, reg_pB, reg_pWr;
 logic[WORD_WIDTH-1:0] reg_dat_in, reg_dat_outA, reg_dat_outB;
 
 // ALU wires
-logic alu_zeroQ;
+// logic alu_zeroQ;
 // logic[1:0] alu_cmd, funct;
 logic[WORD_WIDTH-1:0] alu_inA, alu_inB, alu_result;
-logic shift_carry_in, shift_carry_out;
+logic shift_carry_in = 0, shift_carry_out;
 logic alu_zero, alu_lt;
 
 // Data mem wires
@@ -69,6 +69,7 @@ Control ctrl(
 
 reg_file reg1(
     .clk,
+    .reset,
     .wr_en(reg_write_en),
     .dat_in(reg_dat_in),
     .read_address_A(reg_pA),
@@ -95,6 +96,7 @@ alu alu1(
 dat_mem dm1(
     .dat_in,
     .clk,
+    .reset,
     .wr_en(store_mem_en),
     .rd_en(load_mem_en),
     .address(dat_address),
@@ -107,7 +109,7 @@ always_comb begin
     absolute_en = 0;
     relative_en = 0;
     pc_in = 0;
-    if(req == 0) begin
+    if(req == 1) begin
         relative_en = 1;
         pc_in = 0;
     end
@@ -134,14 +136,20 @@ end
 
 // Determines pointers that go into reg_file
 always_comb begin
-    if(store_mem_en) begin
+    if(load_mem_en) begin
         reg_dat_in = dat_out;
     end
     else begin
         reg_dat_in = alu_result;
     end
 
-    if(reg_write_en) begin // If writing to register
+    if(imm_en) begin
+        if(instruction[5:3] == 3'b000) begin
+            reg_pA = 3'b000;
+        end
+        reg_pA = 3'b111;
+    end
+    else if(reg_write_en) begin // If writing to register
         reg_pA = instruction[4:2];
         case(instruction[1:0]) 
             2'b00:
@@ -174,11 +182,11 @@ end
 // Determines data_in for alu
 always_comb begin
     // 
-    if(reg_target_overwrite) begin
+    if(!inA_zero) begin
         alu_inA = reg_dat_outA;
     end
     else begin
-        alu_inA = '0;
+        alu_inA = 8'b0;
     end
     if(imm_en)begin
         // sign extended immediate 
