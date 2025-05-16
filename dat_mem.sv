@@ -3,6 +3,7 @@ module dat_mem (
     input       clk,
                 wr_en,
                 rd_en,
+                reset,
     input[7:0]  address,
     output logic[7:0]   dat_out
 );
@@ -11,7 +12,12 @@ module dat_mem (
     assign dat_out = core[address];
 
     always_ff @(posedge clk) begin
-        if(wr_en) begin
+        if(reset) begin
+            for(int i = 0; i < 256; i = i + 1) begin
+                core[i] <= 0;
+            end
+        end
+        else if(wr_en) begin
             core[address] <= dat_in;
         end
     end

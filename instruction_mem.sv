@@ -5,7 +5,8 @@ module instruction_mem(
 );
     logic [INSTRUCTION_WIDTH-1:0] core[2**INSTRUCTION_MEM_WIDTH];
     initial begin
-        $readmemb("programs/p1.fgo", core);
+        // $readmemb("programs/p1.fgo", core);
+        $readmemb("programs/test.fgo", core);
     end 
     assign instruction = core[ctr];
 
