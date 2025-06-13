@@ -35,8 +35,12 @@ LSL r3, #1
 LSL r3, #4
 // LSL r3, #5
 // LSR r3, #0
-LSR r3, #1
-LSR r3, #4
+// LSR r3, #1
+// LSR r3, #4
+ADI r0, #0
+ADI r4, #-1
+XOR r3, r4
+XOR r7, r1
 // LSR r3, #5
 LWD r3, r3
 // LWD r7, r8
@@ -44,7 +48,9 @@ SWD r3, r5
 BEQ r3, #10
 BLT r3, #10
 NOP
-JMP #10
+JMP #7
+// JMP #30
+// JMP #0
 NOP
 ADI r3, #0
 ADI r7, #3
@@ -60,8 +66,8 @@ NOP
 NOP
 NOP
 NOP
-NOP
-NOP
+ADI r4, #-4
+ADI r4, #-4
 .TWENTY NOP
 NOP
 NOP
@@ -76,6 +82,7 @@ NOP
 NOP
 NOP
 NOP
+ADI r4, #2
 BLT r3, .TWENTY
 BEQ r5, .MASSIVE
 NOP
@@ -91,6 +98,7 @@ NOP
 NOP
 NOP
 NOP
+JMP #31
 NOP
 NOP
 NOP
@@ -119,3 +127,21 @@ NOP
 NOP
 NOP
 // .MASSIVE ADI r3, #3
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+GOL
+NOP
+NOP
+NOP
+NOP
+NOP
+GOL

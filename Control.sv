@@ -14,9 +14,12 @@ module Control (
                     branch_en,
                     branch_eq,
                     branch_lt,
+                    branch_co,
                     imm_en,
                     inA_zero,
-                    reg_target_overwrite // If true, writes to R7
+                    reg_target_overwrite, // If true, writes to R7
+                    save_pc,
+                    go_link
 );
 
     always_comb begin
@@ -31,9 +34,12 @@ module Control (
         branch_en = 0;
         branch_eq = 0;
         branch_lt = 0;
+        branch_co = 0;
         imm_en = 0;
         inA_zero = 0;
         reg_target_overwrite = 1;
+        save_pc = 0;
+        go_link = 0;
         case(op[3:2])
             'b00: begin // ALU
                 reg_write_en = 1;
@@ -46,8 +52,10 @@ module Control (
                         ALUfunct = 'b01;
                     'b10:   // left roll
                         ALU_rol = 1;
-                    'b11:   // right roll
-                        ALU_rol = 1;
+                    // 'b11:   // right roll
+                    //     ALU_rol = 1;
+                    'b11: // XOR
+                        ALUfunct = 'b11;
                 endcase
             end
             'b01: begin
@@ -61,19 +69,33 @@ module Control (
                 end
             end
             'b10: begin
+                // relative branch
                 if(op[1] == 'b0) begin
                     branch_en = 1;
                     branch_eq = 1;
+                    // save_pc = 1;
                 end
                 else if(op[1] == 'b1) begin
                     branch_en = 1;
                     branch_lt = 1;
+                    // save_pc = 1;
                 end
             end
             'b11: begin
-                if(op[1] == 'b0) begin
+                // if(op[1] == 'b0) begin
+                //     branch_en = 1;
+                //     branch_ab = 1;
+                // end
+                if(op[1:0] == 'b00) begin
                     branch_en = 1;
                     branch_ab = 1;
+                    save_pc = 1;
+                end
+                else if(op[1:0] == 'b01) begin
+                    // go to link register
+                    // go_link = 1;
+                    branch_en = 1;
+                    branch_co = 1;
                 end
                 else if(op[1] == 'b1) begin
                     reg_write_en = 1;

@@ -184,6 +184,7 @@ int main(int argc, char *argv[]) {
             PRINT_DELIMITER
         }
     #endif
+    free(labels);
 
     return 0;
 }
