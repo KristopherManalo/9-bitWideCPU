@@ -17,7 +17,7 @@
 }
 
 #define CHECK_IMM(imm) { \
-    if((imm = scanV(gojoa, index, current_inst, &instP)) == -1) { \
+    if((imm = scanV(gojoa, index, current_inst, &instP)) == 100) { \
         return -1; \
     } \
 }
@@ -65,8 +65,20 @@
     } \
 }
 
+/*
 #define GET_JUMP() { \
     if(imm > 63 || imm < 0) { \
+        strcpy(error, JUMP_ERR); \
+        return -1; \
+    } \
+    int diff = sizeof(int) * 8 - 6; \
+    for(int i = 0; i < 6; ++i) { \
+        out[i] = (char)('0' + (char)((((__UINT32_TYPE__)imm << (i + diff))) >> (sizeof(int) * 8 - 1))); \
+    } \
+}
+    */
+#define GET_JUMP() { \
+    if(imm > 31 || imm < 0) { \
         strcpy(error, JUMP_ERR); \
         return -1; \
     } \
@@ -168,6 +180,28 @@
     outputs->outputs[*lineOut][9] = '\0'; \
 }
 
+#define encXOR() { \
+    int reg0; \
+    CHECK_REG(reg0) \
+    int reg1; \
+    CHECK_REG(reg1) \
+    int valid = regInRange(reg0, reg1); \
+    if(valid == 1) { \
+        outputs->outputs[*lineOut][0] = '0'; \
+        outputs->outputs[*lineOut][1] = '0'; \
+        outputs->outputs[*lineOut][2] = '1'; \
+        outputs->outputs[*lineOut][3] = '1'; \
+        int pt = 4; \
+        encodeReg(&pt, outputs->outputs[*lineOut], reg0); \
+        encodeOff(reg0, reg1, outputs->outputs[*lineOut], &pt); \
+        outputs->outputs[*lineOut][pt] = '\0'; \
+    } \
+    else { \
+        strcpy(error, REGISTER_OFFSET_ERR); \
+        return 1; \
+    } \
+}
+
 #define encLWD() { \
     int reg0; \
     CHECK_REG(reg0) \
@@ -236,6 +270,25 @@
     outputs->outputs[*lineOut][9] = '\0'; \
 }
 
+#define encBCO() { \
+    char out[BUF_SIZE]; \
+    int imm; \
+    CHECK_IMM_BRANCH(imm) \
+    if(imm != -1) { \
+        GET_BRANCH(imm); \
+    } \
+    outputs->outputs[*lineOut][0] = '1'; \
+    outputs->outputs[*lineOut][1] = '1'; \
+    outputs->outputs[*lineOut][2] = '0'; \
+    outputs->outputs[*lineOut][3] = '1'; \
+    outputs->outputs[*lineOut][4] = '0'; \
+    outputs->outputs[*lineOut][5] = '0'; \
+    outputs->outputs[*lineOut][6] = out[0]; \
+    outputs->outputs[*lineOut][7] = out[1]; \
+    outputs->outputs[*lineOut][8] = out[2]; \
+    outputs->outputs[*lineOut][9] = '\0'; \
+}
+
 #define encJMP() { \
     int imm; \
     CHECK_IMM(imm); \
@@ -245,11 +298,13 @@
     outputs->outputs[*lineOut][0] = '1'; \
     outputs->outputs[*lineOut][1] = '1'; \
     outputs->outputs[*lineOut][2] = '0'; \
-    for(int i = 0; i < 8; i++) { \
+    outputs->outputs[*lineOut][2] = '0'; \
+    for(int i = 0; i < 7; i++) { \
         outputs->outputs[*lineOut][3+i] = out[i]; \
     } \
     outputs->outputs[*lineOut][9] = '\0'; \
 }
+
 
 #define encADI() { \
     int reg0; \
@@ -331,6 +386,7 @@ int processLine(char gojoa[BUF_SIZE], /*FILE *file_out,*/
             current_label[i] = gojoa[i];
             // printf("%c", labels.names[labels.num_labels].name[i]);
         }
+        current_label[i] = '\0';
         // printf("heya :3 ");
         labels->names[labels->num_labels].name[i] = '\0';
         // printf("%s", labels->names[labels->num_labels].name);
@@ -367,8 +423,11 @@ int processLine(char gojoa[BUF_SIZE], /*FILE *file_out,*/
     else if(strcmp(OPWORD, "LSL") == 0) {
         encLSL()
     }
-    else if(strcmp(OPWORD, "LSR") == 0) {
-        encLSR()
+    // else if(strcmp(OPWORD, "LSR") == 0) {
+    //     encLSR()
+    // }
+    else if(strcmp(OPWORD, "XOR") == 0) {
+        encXOR()
     }
     else if(strcmp(OPWORD, "LWD") == 0) {
         encLWD()
@@ -387,6 +446,10 @@ int processLine(char gojoa[BUF_SIZE], /*FILE *file_out,*/
     }
     else if(strcmp(OPWORD, "ADI") == 0) {
         encADI()
+    }
+    else if(strcmp(OPWORD, "BCO") == 0) {
+        // strcpy(outputs->outputs[*lineOut], GOL);
+        encBCO()
     }
     else if(strcmp(OPWORD, "NOP") == 0) {
         strcpy(outputs->outputs[*lineOut], NOP);
@@ -452,6 +515,7 @@ int processLine(char gojoa[BUF_SIZE], /*FILE *file_out,*/
         for(int i = 0; pt < BUF_SIZE; pt++, i++) {
             // printf("i = %d", i);
             if(current_label[i] == '\0') {
+                outputs->outputs[*lineOut][pt] = '\0';
                 break;
             }
             outputs->outputs[*lineOut][pt] = current_label[i];
@@ -554,6 +618,10 @@ int scanV(char gojoa[BUF_SIZE], int *index, char current_inst[BUF_SIZE], int *in
                 current_inst[*instP] = imm[i];
                 (*instP)++;
             }
+            // if(i == 1) {
+            //     current_inst[i+1] = '\0';
+            // }
+            current_inst[(*instP)+1] = imm[i];
             imm[i] = '\0';
             (*index)++;
             // printf("imm = %s", imm);
@@ -561,14 +629,16 @@ int scanV(char gojoa[BUF_SIZE], int *index, char current_inst[BUF_SIZE], int *in
             // (*instP) = (*instP);
             current_inst[(*instP)+1] = ',';
             current_inst[(*instP)+2] = ' ';
+            // current_inst[(*instP)+3] = '\0';
             (*instP) = (*instP) + 3;
 
+            printf("i = %d, current instruction = %s\n", i, current_inst);
             return atoi(imm);
         }
     }
     *index = temp;
     // printf("Returning from here");
-    return -1;
+    return 100;
 }
 
 int scanL(char gojoa[BUF_SIZE], int *index, char current_inst[BUF_SIZE], int *instP, char label[BUF_SIZE]) {

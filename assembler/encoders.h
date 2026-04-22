@@ -36,7 +36,7 @@ int scanR(char[BUF_SIZE], int*, char[BUF_SIZE], int*);
  * @param index index to start scanning
  *                  index is updated to ending value
  * @returns found immediate,
- *          returns -1 if no immediate found
+ *          returns 100 if no immediate found
  */
 int scanV(char[BUF_SIZE], int*, char[BUF_SIZE], int*);
 

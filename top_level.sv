@@ -1,7 +1,7 @@
 `include "globals.svh"
 
 module top_level(
-    input clk, reset, req,
+    input clk, reset, start,
     output logic done
 );
 
@@ -10,7 +10,7 @@ logic[INSTRUCTION_WIDTH-1:0] instruction;
 
 // PC wires
 logic[INSTRUCTION_MEM_WIDTH-1:0] program_counter, target_counter;
-logic relative_en, absolute_en;
+logic relative_en = 0, absolute_en = 0;
 logic[INSTRUCTION_MEM_WIDTH-1:0] pc_in;
 
 // AND_LUT wires
@@ -19,7 +19,8 @@ logic[INSTRUCTION_MEM_WIDTH-1:0] pc_in;
 // Control wires
 logic[1:0] ALUfunct;
 logic ALUop, ALU_and, ALU_rol, reg_write_en, load_mem_en, store_mem_en,
-    branch_ab, branch_en, branch_eq, branch_lt, imm_en, inA_zero, reg_target_overwrite;
+    branch_ab, branch_en, branch_eq, branch_lt, imm_en, inA_zero, 
+    reg_target_overwrite, save_pc, go_link, branch_co;
 
 // Reg file wires
 logic[REG_PWIDTH-1:0] reg_pA, reg_pB, reg_pWr;
@@ -35,7 +36,13 @@ logic alu_zero, alu_lt;
 // Data mem wires
 logic[WORD_WIDTH-1:0] dat_in, dat_address, dat_out;
 
+// link register
+logic[INSTRUCTION_MEM_WIDTH-1:0] link_register;
+// logic[INSTRUCTION_MEM_WIDTH-1:0] ab_link_register;
+// logic[INSTRUCTION_MEM_WIDTH-1:0] rel_link_register;
+
 // logic shift_clear = 0, shift_carry_en = 0;
+logic shift_carryQ;
 
 PC_LUT pclut1(
     .address(instruction[2:0]),
@@ -93,7 +100,7 @@ alu alu1(
     .lt(alu_lt)
 );
 
-dat_mem dm1(
+dat_mem data_mem1(
     .dat_in,
     .clk,
     .reset,
@@ -104,18 +111,54 @@ dat_mem dm1(
     .dat_out
 );
 
+// Saves pc+1 to link register
+// always_comb begin
+//     if(save_pc) begin
+//         link_register = program_counter + 1;
+//     end
+// end
+always_ff @(posedge clk) begin
+    if(reset) begin
+        link_register <= '{default: '0};
+        // done <= 0;
+    end
+    if(start) begin
+        done <= 0;
+    end
+    if(save_pc) begin
+        link_register <= program_counter + 1;
+    end
+    if(instruction == 9'b000111100) begin
+        done <= 1;
+    end
+// assign done = (instruction == 9'b000111100);
+end
+
 // Determines target_adress => PC
 always_comb begin
     absolute_en = 0;
     relative_en = 0;
     pc_in = 0;
-    if(req == 1) begin
+    if(done) begin
         relative_en = 1;
         pc_in = 0;
+    end
+    else if(start == 1) begin
+        // relative_en = 1;
+        absolute_en = 1;
+        pc_in = 0;
+    end
+    else if(go_link) begin
+        absolute_en = 1;
+        pc_in = link_register;
     end
     else if(branch_ab) begin
         absolute_en = 1;
         pc_in = (instruction[5:0] << 4);
+    end
+    else if(branch_co && shift_carryQ) begin
+        relative_en = 1;
+        pc_in = target_counter;
     end
     else if(branch_eq && alu_zero) begin
         relative_en = 1;
@@ -149,6 +192,14 @@ always_comb begin
         end
         reg_pA = 3'b111;
     end
+    else if(load_mem_en) begin
+        reg_pA = instruction[5:3];
+        reg_pB = instruction[2:0];
+    end
+    else if(store_mem_en) begin
+        reg_pA = instruction[5:3];
+        reg_pB = instruction[2:0];
+    end
     else if(reg_write_en) begin // If writing to register
         reg_pA = instruction[4:2];
         case(instruction[1:0]) 
@@ -163,14 +214,14 @@ always_comb begin
         endcase
     end
     else if(branch_en) begin // If branching
-        reg_pA = instruction[4:2];
-        // Changed to comparing register and register + 1
-        reg_pB = instruction[4:2] + 1'b1; 
-    end
-    else begin // If loading/storing to memory
         reg_pA = instruction[5:3];
-        reg_pB = instruction[2:0];
+        // Changed to comparing register and register + 1
+        reg_pB = instruction[5:3] + 1'b1; 
     end
+    // else begin // If loading/storing to memory
+    //     reg_pA = instruction[5:3];
+    //     reg_pB = instruction[2:0];
+    // end
 end
 always_comb begin
     if(reg_target_overwrite)
@@ -200,13 +251,17 @@ always_comb begin
     else if(ALU_rol) begin
         case(instruction[1:0])
             2'b00:
+                // Roll left 1
                 alu_inB = 8'b00000001;
             2'b01:
+                // Roll left 2
                 alu_inB = 8'b00000010;
             2'b10:
+                // Roll left 3
                 alu_inB = 8'b00000011;
             2'b11:
-                alu_inB = 8'b00000111;
+                // Roll left 4
+                alu_inB = 8'b00000100;
         endcase 
     end
     else begin
@@ -214,14 +269,15 @@ always_comb begin
     end
 end
 
-// always_ff @(posedge clk) begin
+always_ff @(posedge clk) begin
+    shift_carryQ <= shift_carry_out;
 //     alu_zeroQ <= alu_zero;
 //     if(shift_clear)
 //         shift_carry_in <= 'b0;
 //     else if(shift_carry_en) 
 //         shift_carry_in <= shift_carry_out;
-// end
+end
 
-assign done = (instruction == 9'b000111100);
+// assign done = (instruction == 9'b000111100);
 
 endmodule
