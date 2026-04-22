@@ -8,7 +8,7 @@ Register acceptable range is from r_i to r_{i+3}, inclusive.
 
 ## Assembler
 ```
-make windows
+make
 ```
 Usage:
 ```
