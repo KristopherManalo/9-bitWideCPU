@@ -4,8 +4,6 @@
 
 
 
-Register acceptable range for r<sub>i</sub> is from r<sub>i+1</sub> to r<sub>i+4</sub>, inclusive.
-
 ## Assembler
 Compile:
 ```
@@ -17,7 +15,8 @@ Usage:
 ```
 ## Registers
 R0 - hard coded to 0 \
-R7 - result register of most instructions
+R7 - result register of most instructions \
+Register acceptable range for r<sub>i</sub> is from r<sub>i+1</sub> to r<sub>i+4</sub>, inclusive.
 ## Instructions
 
 Instr | lhs | rhs | Notes
