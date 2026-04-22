@@ -25,7 +25,7 @@ AND| r<sub>i</sub> | r<sub>j</sub> = [r<sub>i</sub>, r<sub>i+4</sub>] | Bitwise 
 ADD| r<sub>i</sub> | r<sub>j</sub> = [r<sub>i</sub>, r<sub>i+4</sub>] | Adds r<sub>i</sub> and r<sub>j</sub>
 XOR| r<sub>i</sub> | r<sub>j</sub> = [r<sub>i</sub>, r<sub>i+4</sub>] | Bitwise XOR of r<sub>i</sub> and r<sub>j</sub>
 LWD| r<sub>i</sub> | r<sub>j</sub> | r<sub>i</sub> = dat_mem[r<sub>j</sub>]
-SWD| r<sub>i</sub> | r<sub>j</sub> | dat_mem[r<sub>j</sub> = r<sub>i</sub>
+SWD| r<sub>i</sub> | r<sub>j</sub> | dat_mem[r<sub>j</sub>] = r<sub>i</sub>
 BEQ| r<sub>i</sub> | 4-bit mapping | r<sub>i</sub> == r<sub<i+1</sub>
 BLT| r<sub>i</sub> | 4-bit mapping | r<sub>i</sub> <  r<sub>i+1</sub>
 BCO| null | 3-bit mapping | Bit mapping can be used with -r flag 
