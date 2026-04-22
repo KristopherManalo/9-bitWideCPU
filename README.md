@@ -15,7 +15,9 @@ Usage:
 ```
 ./fga [source] [options]
 ```
-
+## Registers
+R0 - hard coded to 0 \
+R7 - result register of most instructions
 ## Instructions
 
 Instr | lhs | rhs | Notes
